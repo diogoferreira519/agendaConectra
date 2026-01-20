@@ -5,11 +5,13 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Eye, EyeOff } from 'lucide-react';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import axios from 'axios'
 
 import { CadastroSchema, cadastroSchema } from './schemas/cadastro.schema';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import { ToastContainer, toast } from 'react-toastify';
 
 export default function Cadastro() {
     const router = useRouter();
@@ -24,8 +26,35 @@ export default function Cadastro() {
         resolver: zodResolver(cadastroSchema),
     });
 
-    function onSubmit(data: CadastroSchema) {
-        console.log(data);
+    async function onSubmit(data: CadastroSchema) {
+        try {
+            if (data.password != data.confirmPassword) {
+                toast.error("Senhas não são iguais");
+                return;
+            }
+            const cadastro = await axios.post('api/cadastro', {
+                data
+            })
+
+            console.log(cadastro);
+            
+            if (cadastro.status != 200) {
+                toast.error(cadastro.data.message)
+                return;
+            }
+
+            toast.success('Cadastro realizado com sucesso');
+            
+            setTimeout(() => {
+                router.push('/login');
+            }, 1500);
+
+        } catch (error) {
+            toast.error(
+                error.response?.data?.message || 'Erro ao cadastrar'
+            )
+            console.error(error);
+        }
     }
 
     return (
@@ -104,9 +133,9 @@ export default function Cadastro() {
                             <Label htmlFor="email">Confirme a Senha</Label>
                             <div className="relative">
                                 <Input
-                                    id="password"
+                                    id="confirmPassword"
                                     type={showPasswordConfirm ? 'text' : 'password'}
-                                    {...register('password')}
+                                    {...register('confirmPassword')}
                                     className="pr-10"
                                 />
 
@@ -125,20 +154,23 @@ export default function Cadastro() {
                             </div>
                         </div>
 
-                        <Button
-                            type="submit"
-                            className="w-full"
-                            disabled={isSubmitting}
-                        >
-                            {isSubmitting ? 'Cadastrando...' : 'Cadastrar'}
-                        </Button>
+                        <div className='flex-col'>
+                            <Button
+                                type="submit"
+                                className="w-full mb-3"
+                                disabled={isSubmitting}
+                            >
+                                {isSubmitting ? 'Cadastrando...' : 'Cadastrar'}
+                            </Button>
+                            <ToastContainer />
 
-                        <Button
-                            className="w-full bg-red-400 hover:bg-red-500"
-                            onClick={()=> router.push('/login')}
-                        >
-                           Voltar
-                        </Button>
+                            <Button
+                                className="w-full bg-red-400 hover:bg-red-500"
+                                onClick={() => router.push('/login')}
+                            >
+                                Voltar
+                            </Button>
+                        </div>
                     </form>
                 </div>
             </div>

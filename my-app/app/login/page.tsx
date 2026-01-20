@@ -10,6 +10,8 @@ import { LoginSchema, loginSchema } from './schemas/login.schema';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import axios from 'axios';
+import { toast, ToastContainer } from 'react-toastify';
 
 export default function Login() {
     const router = useRouter();
@@ -23,8 +25,27 @@ export default function Login() {
         resolver: zodResolver(loginSchema),
     });
 
-    function onSubmit(data: LoginSchema) {
-        console.log(data);
+    async function onSubmit(data: LoginSchema) {
+        try {
+            const login = await axios.post('api/login', {
+                data
+            })
+
+            console.log(JSON.stringify(login));
+            
+            if (login.status != 200) {
+                toast.error(login.data.message)
+                return;
+            }
+
+            router.push('/agenda');
+
+        } catch (error) {
+            toast.error(
+                error.response?.data?.message || 'Erro ao se logar'
+            )
+            console.error(error);
+        }
     }
 
     return (
@@ -78,7 +99,6 @@ export default function Login() {
                             )}
                         </div>
 
-                        {/* Senha */}
                         <div className="space-y-1">
                             <Label htmlFor="password">Senha</Label>
 
@@ -119,6 +139,7 @@ export default function Login() {
                         >
                             {isSubmitting ? 'Entrando...' : 'Entrar'}
                         </Button>
+                        <ToastContainer />
 
                         <p className="text-center text-sm text-gray-600">
                             Não possui uma conta?{' '}
