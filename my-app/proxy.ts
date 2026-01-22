@@ -13,7 +13,6 @@ export function proxy(request: NextRequest) {
         console.log('token ' + token)
 
         if (!token) {
-            console.log('caiu??')
             return NextResponse.redirect(new URL('/login', request.url));
         }
 

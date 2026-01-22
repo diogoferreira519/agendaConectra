@@ -33,7 +33,7 @@ export async function POST(req: Request) {
         if (!senhaIgual) {
             return NextResponse.json(
                 { message: 'Senha incorreta' },
-                { status: 200 }
+                { status: 401 }
             )
         }
         const jwtSecret = process.env.JWT_SECRET;
